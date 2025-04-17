@@ -1,27 +1,17 @@
 name: Deploy to ECR and EC2
-
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-
-      - name: Build with Gradle (skip tests)
-        run: ./gradlew build -x test
+      - name: Build with Gradle
+        run: ./gradlew build
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -30,14 +20,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
 
-      - name: Login to Amazon ECR
+      - name: Login to ECR
         uses: aws-actions/amazon-ecr-login@v1
         id: login-ecr
 
       - name: Build and Push Docker image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: aboutpets-server
+          ECR_REPOSITORY: aws-demo
           IMAGE_TAG: latest
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
