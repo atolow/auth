@@ -3,17 +3,27 @@ package example.com.auth.user.dto;
 
 import example.com.auth.user.domain.Role;
 import example.com.auth.user.domain.User;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.util.Set;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
+@Schema(description = "회원 응답 DTO")
 public class UserResponseDto {
-    private final Long id;
-    private final String username;
-    private final String nickname;
-    private final Role role;
+
+    @Schema(description = "유저 ID", example = "1")
+    private Long id;
+
+    @Schema(description = "유저명", example = "testuser")
+    private String username;
+
+    @Schema(description = "닉네임", example = "테스트유저")
+    private String nickname;
+
+    @Schema(description = "유저 권한", example = "USER")
+    private Role role;
 
     @Builder
     public UserResponseDto(Long id, String username, String nickname, Role role) {

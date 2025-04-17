@@ -1,5 +1,6 @@
 package example.com.auth.security;
 
+import example.com.auth.global.exception.InvalidTokenException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -59,8 +60,12 @@ public class JwtProvider {
                     .parseClaimsJws(token);
 
             return !claimsJws.getBody().getExpiration().before(new Date());
+
+        } catch (ExpiredJwtException e) {
+            // ⛔️ 만료 예외는 따로 던져서 JwtAuthenticationFilter에서 catch 가능하도록
+            throw e;
         } catch (JwtException | IllegalArgumentException e) {
-            return false;
+            throw new InvalidTokenException("유효하지 않은 JWT입니다.");
         }
     }
 
@@ -81,4 +86,17 @@ public class JwtProvider {
                 .parseClaimsJws(token)
                 .getBody();
     }
+    public String generateToken(String username, Role role, long expireMillis) {
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + expireMillis);
+
+        return Jwts.builder()
+                .setSubject(username)
+                .claim("role", role.name())
+                .setIssuedAt(now)
+                .setExpiration(expiry)
+                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
 }
