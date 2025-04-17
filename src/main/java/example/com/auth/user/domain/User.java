@@ -36,4 +36,8 @@ public class User extends TimeBaseEntity {
         this.nickname = nickname;
         this.role = role;
     }
+
+    public void changeRole(Role role){
+        this.role=role;
+    }
 }

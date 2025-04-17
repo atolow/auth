@@ -1,8 +1,13 @@
 package example.com.auth.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import example.com.auth.global.dto.GlobalErrorResponse;
 import example.com.auth.global.exception.InvalidTokenException;
+
 import example.com.auth.user.domain.User;
 import example.com.auth.user.repository.UserRepository;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,34 +39,42 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String username = jwtProvider.getUsername(token);
 
                 User user = userRepository.findByUsername(username)
-                        .orElseThrow(() -> new InvalidTokenException("토큰의 사용자 정보를 찾을 수 없습니다."));
+                        .orElseThrow(() -> new RuntimeException("토큰의 사용자 정보를 찾을 수 없습니다."));
 
-                // ✅ UserDetails 객체 생성
                 UserDetailsImp userDetails = new UserDetailsImp(user);
-
-                // ✅ 인증 객체 생성 및 등록
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-
-                System.out.println("✅ 인증 완료: " + userDetails.getUsername());
+                System.out.println("인증 완료: " + userDetails.getUsername());
             }
 
-        } catch (Exception e) {
-            // ✅ 유효하지 않은 토큰 처리
-            throw new InvalidTokenException("유효하지 않은 인증 토큰입니다.");
-        }
+            filterChain.doFilter(request, response);
 
-        filterChain.doFilter(request, response);
+        } catch (ExpiredJwtException e) {
+            setErrorResponse(response, "EXPIRED_JWT", "토큰이 만료되었습니다.");
+        } catch (JwtException | IllegalArgumentException e) {
+            setErrorResponse(response, "INVALID_JWT", "유효하지 않은 JWT입니다.");
+        } catch (Exception e) {
+            setErrorResponse(response, "UNAUTHORIZED", "로그인이 필요합니다.");
+        }
     }
 
-    // ✅ Authorization 헤더에서 Bearer 토큰 추출
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7); // "Bearer " 제거 후 토큰 반환
+            return bearerToken.substring(7); // "Bearer " 제거
         }
         return null;
+    }
+
+    private void setErrorResponse(HttpServletResponse response, String code, String message) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        GlobalErrorResponse error = GlobalErrorResponse.of(code, message);
+        String json = new ObjectMapper().writeValueAsString(error);
+        response.getWriter().write(json);
     }
 }

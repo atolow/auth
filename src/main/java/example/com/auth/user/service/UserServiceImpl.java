@@ -12,6 +12,7 @@ import example.com.auth.user.dto.LoginResponseDto;
 import example.com.auth.user.dto.SignupRequestDto;
 import example.com.auth.user.dto.UserResponseDto;
 import example.com.auth.user.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -54,7 +55,7 @@ public class UserServiceImpl implements UserService {
         String token = jwtProvider.generateToken(user.getUsername(), user.getRole());
         return new LoginResponseDto(token);
     }
-
+    @Transactional
     public UserResponseDto grantAdminRole(Long userId, User authentication) {
         // 요청한 사용자 확인
         User requester = userRepository.findByUsername(authentication.getUsername())
@@ -67,8 +68,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new CustomUserNotFoundException("대상 사용자를 찾을 수 없습니다."));
 
         // 관리자 권한 없으면 예외
-
-        userRepository.save(target);
+        target.changeRole(Role.ADMIN);
 
         return UserResponseDto.from(target);
     }
