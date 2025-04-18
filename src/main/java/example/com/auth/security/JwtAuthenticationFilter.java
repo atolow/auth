@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import example.com.auth.global.dto.GlobalErrorResponse;
 import example.com.auth.global.exception.InvalidTokenException;
 
+import example.com.auth.redis.RedisBlackListService;
 import example.com.auth.user.domain.User;
 import example.com.auth.user.repository.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -25,6 +26,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
+    private final RedisBlackListService redisBlackListService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -35,18 +37,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String token = resolveToken(request);
 
-            if (token != null && jwtProvider.validateToken(token)) {
-                String username = jwtProvider.getUsername(token);
+            // 토큰 존재 여부 확인
+            if (token != null) {
+                // 로그아웃된 토큰인지 확인
+                if (redisBlackListService.isBlacklisted(token)) {
+                    throw new JwtException("로그아웃된 토큰입니다.");
+                }
 
-                User user = userRepository.findByUsername(username)
-                        .orElseThrow(() -> new RuntimeException("토큰의 사용자 정보를 찾을 수 없습니다."));
+                // 유효한 토큰이면 인증 처리
+                if (jwtProvider.validateToken(token)) {
+                    String username = jwtProvider.getUsername(token);
 
-                UserDetailsImp userDetails = new UserDetailsImp(user);
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    User user = userRepository.findByUsername(username)
+                            .orElseThrow(() -> new RuntimeException("토큰의 사용자 정보를 찾을 수 없습니다."));
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                System.out.println("인증 완료: " + userDetails.getUsername());
+                    UserDetailsImp userDetails = new UserDetailsImp(user);
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    System.out.println("인증 완료: " + userDetails.getUsername());
+                }
             }
 
             filterChain.doFilter(request, response);

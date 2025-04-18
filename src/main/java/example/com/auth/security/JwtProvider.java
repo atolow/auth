@@ -29,14 +29,14 @@ public class JwtProvider {
     }
 
     /**
-     * 기본 만료 시간(1시간) 토큰 발급
+     * 기본 만료 시간으로 토큰 발급
      */
     public String generateToken(String username, Role role) {
         return generateToken(username, role, EXPIRATION_TIME);
     }
 
     /**
-     * 사용자 정의 만료 시간 토큰 발급
+     * 사용자 지정 만료 시간으로 토큰 발급
      */
     public String generateToken(String username, Role role, long expireMillis) {
         Date now = new Date();
@@ -51,23 +51,29 @@ public class JwtProvider {
                 .compact();
     }
 
+
+    public long getRemainingExpiration(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        Date expiration = claims.getExpiration();
+        long now = System.currentTimeMillis();
+        return expiration.getTime() - now;
+    }
+
     /**
-     * 토큰 유효성 검사
+     * 토큰 유효성 검사 (만료 여부 포함)
      */
     public boolean validateToken(String token) {
         try {
-            Jws<Claims> claimsJws = Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
-                    .build()
-                    .parseClaimsJws(token);
-
-            return !claimsJws.getBody().getExpiration().before(new Date());
-
+            Claims claims = parseClaims(token);
+            return !claims.getExpiration().before(new Date());
         } catch (ExpiredJwtException e) {
-            // 만료된 토큰 → 필터에서 catch 가능
-            throw e;
+            throw e; // 필터에서 따로 처리
         } catch (JwtException | IllegalArgumentException e) {
-            // 유효하지 않은 형식
             throw new InvalidTokenException("유효하지 않은 JWT입니다.");
         }
     }
@@ -76,32 +82,38 @@ public class JwtProvider {
      * 토큰에서 username 추출
      */
     public String getUsername(String token) {
+        return parseClaims(token).getSubject();
+    }
+
+    /**
+     * 토큰에서 Role 추출
+     */
+    public Role getRole(String token) {
+        try {
+            String roleString = parseClaims(token).get("role", String.class);
+            return Role.valueOf(roleString);
+        } catch (Exception e) {
+            throw new InvalidTokenException("JWT에서 role을 추출할 수 없습니다.");
+        }
+    }
+
+    /**
+     * Claims 파싱 (공통 처리용)
+     */
+    private Claims parseClaims(String token) {
         try {
             return Jwts.parserBuilder()
                     .setSigningKey(secretKey)
                     .build()
                     .parseClaimsJws(token)
-                    .getBody()
-                    .getSubject();
-        } catch (Exception e) {
-            throw new InvalidTokenException("JWT에서 username을 추출할 수 없습니다.");
+                    .getBody();
+        } catch (ExpiredJwtException e) {
+            return e.getClaims(); // 만료됐어도 claims 추출 가능
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new InvalidTokenException("JWT 파싱 실패");
         }
     }
-
-    /**
-     * 토큰에서 role 추출 (선택적)
-     */
-    public Role getRole(String token) {
-        try {
-            String roleString = Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody()
-                    .get("role", String.class);
-            return Role.valueOf(roleString);
-        } catch (Exception e) {
-            throw new InvalidTokenException("JWT에서 role을 추출할 수 없습니다.");
-        }
+    public Key getSecretKey() {
+        return this.secretKey;
     }
 }

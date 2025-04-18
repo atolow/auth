@@ -2,6 +2,8 @@ package example.com.auth.user.controller;
 
 
 import example.com.auth.global.dto.GlobalErrorResponse;
+import example.com.auth.redis.RedisBlackListService;
+import example.com.auth.security.JwtProvider;
 import example.com.auth.security.UserDetailsImp;
 import example.com.auth.user.domain.User;
 import example.com.auth.user.dto.*;
@@ -25,6 +27,8 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final JwtProvider jwtProvider;
+    private final RedisBlackListService redisBlackListService;
 
     @Operation(summary = "회원가입", description = "username, password, nickname을 받아 회원가입합니다.")
     @ApiResponses({
@@ -65,5 +69,19 @@ public class UserController {
         User user = UserUtils.getUser(userDetails);
         UserResponseDto updatedUser = userService.grantAdminRole(userId, user);
         return ResponseEntity.ok(updatedUser);
+    }
+
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader("Authorization") String bearerToken) {
+        if (!bearerToken.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().body("잘못된 Authorization 헤더 형식입니다.");
+        }
+
+        String token = bearerToken.substring(7);
+        long expiration = jwtProvider.getRemainingExpiration(token); // 남은 만료 시간(ms)
+
+        redisBlackListService.blacklistToken(token, expiration);
+        return ResponseEntity.ok().body("로그아웃 성공");
     }
 }
