@@ -84,6 +84,7 @@ public class SecurityConfig {
     }
 
     // 로그인 인증에 필요 (FormLogin 사용 안하더라도 내부적으로 필요함)
+
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
