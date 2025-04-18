@@ -1,5 +1,6 @@
 package example.com.auth.config;
 
+import example.com.auth.redis.RedisBlackListService;
 import example.com.auth.security.JwtAuthenticationFilter;
 import example.com.auth.security.JwtProvider;
 import example.com.auth.user.repository.UserRepository;
@@ -27,6 +28,7 @@ public class SecurityConfig {
 
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
+    private final RedisBlackListService redisBlackListService;
 
     @Bean
     public SecurityFilterChain filterChain(org.springframework.security.config.annotation.web.builders.HttpSecurity http) throws Exception {
@@ -48,7 +50,7 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().hasRole("USER")
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, userRepository),
+                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, userRepository, redisBlackListService),
                         UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((req, res, ex) -> {
