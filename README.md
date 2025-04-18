@@ -8,7 +8,7 @@
 
 - **Backend**: Java, Spring Boot, JPA
 - **Database**: MySQL
-- **Infra**: AWS EC2
+- **Infra**: EC2 + Docker + ECR
 - **API Management**: Postman, Swagger
 
 ### 1. 사용자(User)
