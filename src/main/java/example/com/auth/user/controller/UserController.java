@@ -72,6 +72,14 @@ public class UserController {
     }
 
 
+    @Operation(
+            summary = "JWT 로그아웃",
+            description = "Authorization 헤더에 포함된 JWT 토큰을 블랙리스트에 등록하여 로그아웃 처리합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "로그아웃 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 Authorization 헤더 형식")
+    })
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestHeader("Authorization") String bearerToken) {
         if (!bearerToken.startsWith("Bearer ")) {
