@@ -34,11 +34,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        String path = request.getRequestURI();
-        if (path.equals("/logout")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
         try {
             String token = resolveToken(request);
 
