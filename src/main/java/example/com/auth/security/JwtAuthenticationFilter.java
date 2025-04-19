@@ -2,7 +2,6 @@ package example.com.auth.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import example.com.auth.global.dto.GlobalErrorResponse;
-import example.com.auth.global.exception.InvalidTokenException;
 
 import example.com.auth.redis.RedisBlackListService;
 import example.com.auth.user.domain.User;
@@ -14,13 +13,14 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-
+@Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -34,7 +34,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-
+        log.info("JWT 필터 실행됨. Authorization = {}", request.getHeader("Authorization"));
         try {
             String token = resolveToken(request);
 
