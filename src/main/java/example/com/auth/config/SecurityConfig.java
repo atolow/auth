@@ -31,6 +31,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(org.springframework.security.config.annotation.web.builders.HttpSecurity http) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
+                .logout(logout -> logout.disable())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // JWT 기반은 무상태
                 .authorizeHttpRequests(auth -> auth
