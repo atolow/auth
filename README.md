@@ -7,7 +7,7 @@
 ## 🛠️ 기술 스택
 
 - **Backend**: Java, Spring Boot, JPA
-- **Database**: MySQL ,Redis
+- **Database**: MySQL, Redis
 - **Infra**: EC2 + Docker + ECR
 - **API Management**: Postman, Swagger
 
