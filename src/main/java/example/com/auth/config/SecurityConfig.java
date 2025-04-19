@@ -38,7 +38,8 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // JWT 기반은 무상태
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/auth/**",
+                                "/signup",
+                                "/login",
                                 "/swagger",
                                 "/swagger/**",
                                 "/swagger-ui.html",
