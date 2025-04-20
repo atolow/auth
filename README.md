@@ -18,5 +18,5 @@
 
 ### 2. 배포(IP)
 - EC2 + Docker + ECR 배포
-- http://3.39.192.172:8080/swagger
-- http://3.39.192.172:8080/docs
+- http://3.35.9.4:8080/swagger
+- http://3.35.9.4:8080/docs
