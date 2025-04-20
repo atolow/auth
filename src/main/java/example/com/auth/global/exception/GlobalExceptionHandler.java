@@ -43,5 +43,4 @@ public class GlobalExceptionHandler {
         GlobalErrorResponse error = GlobalErrorResponse.of("UNAUTHORIZED", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
-
 }

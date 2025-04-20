@@ -3,6 +3,7 @@ package example.com.auth.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import example.com.auth.global.dto.GlobalErrorResponse;
 
+import example.com.auth.global.exception.CustomUserNotFoundException;
 import example.com.auth.redis.RedisBlackListService;
 import example.com.auth.user.domain.User;
 import example.com.auth.user.repository.UserRepository;
@@ -67,6 +68,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             setErrorResponse(response, "EXPIRED_JWT", "토큰이 만료되었습니다.");
         } catch (JwtException | IllegalArgumentException e) {
             setErrorResponse(response, "INVALID_JWT", "유효하지 않은 JWT입니다.");
+        } catch (CustomUserNotFoundException e) {
+            setErrorResponse(response, "INVALID_JWT", "아이디가 존재하지 않습니다.");
         } catch (Exception e) {
             setErrorResponse(response, "UNAUTHORIZED", "로그인이 필요합니다.");
         }
