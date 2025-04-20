@@ -69,7 +69,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (JwtException | IllegalArgumentException e) {
             setErrorResponse(response, "INVALID_JWT", "유효하지 않은 JWT입니다.");
         } catch (CustomUserNotFoundException e) {
-            setErrorResponse(response, "INVALID_JWT", "아이디가 존재하지 않습니다.");
+            setErrorResponse(response, "USER_NOT_FOUND", "아이디가 존재하지 않습니다.");
         } catch (Exception e) {
             setErrorResponse(response, "UNAUTHORIZED", "로그인이 필요합니다.");
         }
