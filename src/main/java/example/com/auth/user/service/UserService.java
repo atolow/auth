@@ -7,7 +7,8 @@ import example.com.auth.user.dto.SignupRequestDto;
 import example.com.auth.user.dto.UserResponseDto;
 
 public interface UserService {
-    UserResponseDto signup(SignupRequestDto request);
+    UserResponseDto userSignup(SignupRequestDto request);
+    UserResponseDto adminSignup(SignupRequestDto request);
     LoginResponseDto login(LoginRequestDto request);
     UserResponseDto grantAdminRole(Long userId, User userDetails);
 }

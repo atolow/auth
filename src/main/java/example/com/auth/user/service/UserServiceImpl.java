@@ -27,7 +27,7 @@ public class UserServiceImpl implements UserService {
     private final JwtProvider jwtProvider;
 
     @Override
-    public UserResponseDto signup(SignupRequestDto request) {
+    public UserResponseDto userSignup(SignupRequestDto request) {
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new UserAlreadyExistsException("이미 가입된 사용자입니다.");
         }
@@ -37,6 +37,23 @@ public class UserServiceImpl implements UserService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .nickname(request.getNickname())
                 .role(Role.USER)
+                .build();
+
+        userRepository.save(user);
+
+        return UserResponseDto.from(user);
+    }
+    @Override
+    public UserResponseDto adminSignup(SignupRequestDto request) {
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new UserAlreadyExistsException("이미 가입된 사용자입니다.");
+        }
+
+        User user = User.builder()
+                .username(request.getUsername())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .nickname(request.getNickname())
+                .role(Role.ADMIN)
                 .build();
 
         userRepository.save(user);

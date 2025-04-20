@@ -29,7 +29,7 @@ public class UserController {
     private final JwtProvider jwtProvider;
     private final RedisBlackListService redisBlackListService;
 
-    @Operation(summary = "회원가입", description = "username, password, nickname을 받아 회원가입합니다.")
+    @Operation(summary = "USER 회원가입", description = "username, password, nickname을 받아 USER 회원가입합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "회원가입 성공",
                     content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
@@ -38,8 +38,21 @@ public class UserController {
     })
     @PostMapping("/signup")
     public ResponseEntity<UserResponseDto> creatUser(@RequestBody SignupRequestDto request) {
-        return ResponseEntity.ok(userService.signup(request));
+        return ResponseEntity.ok(userService.userSignup(request));
     }
+
+    @Operation(summary = "ADMIN 회원가입", description = "username, password, nickname을 받아 ADMIN 회원가입합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "회원가입 성공",
+                    content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
+            @ApiResponse(responseCode = "409", description = "이미 가입된 사용자",
+                    content = @Content(schema = @Schema(implementation = GlobalErrorResponse.class)))
+    })
+    @PostMapping("/signup")
+    public ResponseEntity<UserResponseDto> adminCreatUser(@RequestBody SignupRequestDto request) {
+        return ResponseEntity.ok(userService.adminSignup(request));
+    }
+
 
     @Operation(summary = "로그인", description = "username과 password를 받아 토큰을 발급합니다.")
     @ApiResponses({
