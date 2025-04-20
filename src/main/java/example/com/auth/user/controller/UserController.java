@@ -48,7 +48,7 @@ public class UserController {
             @ApiResponse(responseCode = "409", description = "이미 가입된 사용자",
                     content = @Content(schema = @Schema(implementation = GlobalErrorResponse.class)))
     })
-    @PostMapping("/signup")
+    @PostMapping("/adminSignup")
     public ResponseEntity<UserResponseDto> adminCreatUser(@RequestBody SignupRequestDto request) {
         return ResponseEntity.ok(userService.adminSignup(request));
     }
