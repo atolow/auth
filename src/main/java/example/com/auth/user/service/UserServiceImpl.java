@@ -43,6 +43,7 @@ public class UserServiceImpl implements UserService {
 
         return UserResponseDto.from(user);
     }
+
     @Override
     public UserResponseDto adminSignup(SignupRequestDto request) {
         if (userRepository.existsByUsername(request.getUsername())) {
@@ -72,6 +73,7 @@ public class UserServiceImpl implements UserService {
         String token = jwtProvider.generateToken(user.getUsername(), user.getRole());
         return new LoginResponseDto(token);
     }
+
     @Transactional
     public UserResponseDto grantAdminRole(Long userId, User authentication) {
         // 요청한 사용자 확인
